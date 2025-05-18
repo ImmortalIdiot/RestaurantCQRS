@@ -1,0 +1,11 @@
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+!**/src/main/**/out/
+
+### Kotlin ###
+.kotlin
