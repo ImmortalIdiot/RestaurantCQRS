@@ -5,7 +5,6 @@ import com.immortalidiot.api.ui.ConsoleInterface
 import com.immortalidiot.command.command.*
 import com.immortalidiot.command.handler.*
 import com.immortalidiot.command.repository.InMemoryOrderRepository
-import com.immortalidiot.command.repository.OrderRepository
 import com.immortalidiot.common.event.EventBus
 import com.immortalidiot.common.event.OrderStatus
 import com.immortalidiot.query.repository.OrderViewRepository
