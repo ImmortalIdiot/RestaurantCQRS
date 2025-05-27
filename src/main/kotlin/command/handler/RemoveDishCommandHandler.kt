@@ -12,7 +12,8 @@ class RemoveDishCommandHandler(
         val order = orderRepository.findById(command.orderId)
             ?: throw OrderExceptions.OrderNotFoundException(command.orderId)
 
-        order.removeItemByDish(command.dish)
+        order.removeItemByDish(command.dish, command.quantity)
+
         orderRepository.save(order)
     }
 }

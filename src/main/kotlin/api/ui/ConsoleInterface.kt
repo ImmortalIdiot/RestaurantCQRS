@@ -1,7 +1,10 @@
 package com.immortalidiot.api.ui
 
 import com.immortalidiot.api.facade.RestaurantFacade
+import com.immortalidiot.command.model.DishCategory
+import com.immortalidiot.command.repository.DishRepository
 import com.immortalidiot.common.event.OrderStatus
+import com.immortalidiot.common.exception.OrderExceptions
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -53,37 +56,57 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
     }
 
     private fun handleCreateOrder() {
-        print("Введите id клиента: ")
-        val customerId = readlnOrNull() ?: return
+        print("Введите ID клиента: ")
+        val customerId = readlnOrNull()?.trim()
+        if (customerId.isNullOrBlank()) {
+            println("Некорректный ID клиента.")
+            return
+        }
 
         print("Введите номер столика: ")
-        val tableNumber = readlnOrNull()?.toIntOrNull() ?: return
+        val tableNumber = readlnOrNull()?.toIntOrNull()
+        if (tableNumber == null || tableNumber <= 0) {
+            println("Некорректный номер столика.")
+            return
+        }
 
         try {
             restaurantFacade.createOrder(customerId, tableNumber)
-            val orders = restaurantFacade.getAllOrders()
-            val orderId = orders.last().id
+            val orderId = restaurantFacade.getAllOrders().last().id
 
             while (true) {
                 print("\nДобавить блюдо в заказ? (Да/Нет): ")
-                when (readlnOrNull()?.lowercase()) {
+                when (readlnOrNull()?.trim()?.lowercase()) {
                     "да" -> {
-                        print("Введите название блюда: ")
-                        val dish = readlnOrNull() ?: continue
+                        DishRepository.printMenu()
+
+                        print("Введите название блюда или номер позиции: ")
+                        val input = readlnOrNull()?.trim()
+                        val dish = input?.let { DishRepository.getDishByNumberOrName(it) }
+                        if (dish == null) {
+                            println("Ошибка: блюдо \"$input\" не найдено в меню.")
+                            continue
+                        }
 
                         print("Введите количество: ")
-                        val quantity = readlnOrNull()?.toIntOrNull() ?: continue
-
-                        print("Введите цену: ")
-                        val price = readlnOrNull()?.toDoubleOrNull() ?: continue
+                        val quantity = readlnOrNull()?.toIntOrNull()
+                        if (quantity == null || quantity <= 0) {
+                            println("Некорректное количество.")
+                            continue
+                        }
 
                         try {
-                            restaurantFacade.addDishToOrder(orderId, dish, quantity, price)
-                            println("Блюдо успешно добавлено в заказ!")
+                            restaurantFacade.addDishToOrder(orderId, dish, quantity)
+                            println(
+                                "Блюдо \"${dish.name}\" успешно добавлено в заказ: $quantity шт. на сумму ${
+                                    "%,.2f".format(dish.price * quantity)
+                                } руб."
+                            )
                         } catch (e: Exception) {
-                            println("Ошибка добавления блюда в заказ: ${e.message}")
+                            println("Ошибка при добавлении блюда: ${e.message}")
                         }
                     }
+
                     "нет" -> break
                     else -> println("Неверный ввод. Введите 'Да' или 'Нет'.")
                 }
@@ -95,6 +118,7 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
             println("Ошибка создания заказа: ${e.message}")
         }
     }
+
 
     private fun printOrderDetails(orderId: String) {
         val order = restaurantFacade.getOrder(orderId)
@@ -123,19 +147,23 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         }
 
         println("\n=== Все заказы ===")
-        println("%-36s %-15s %-15s %-15s %-15s".format(
-            "ID", "Клиент", "Столик", "Статус", "Сумма"
-        ))
+        println(
+            "%-36s %-15s %-15s %-15s %-15s".format(
+                "ID", "Клиент", "Столик", "Статус", "Сумма"
+            )
+        )
         println("-".repeat(100))
 
         orders.forEach { order ->
-            println("%-36s %-15s %-15d %-15s %,.2f руб.".format(
-                order.id,
-                order.customerId,
-                order.tableNumber,
-                order.status,
-                order.totalAmount
-            ))
+            println(
+                "%-36s %-15s %-15d %-15s %,.2f руб.".format(
+                    order.id,
+                    order.customerId,
+                    order.tableNumber,
+                    order.status,
+                    order.totalAmount
+                )
+            )
         }
     }
 
@@ -160,14 +188,14 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         if (order.items.isNotEmpty()) {
             println("\nБлюда в заказе:")
             println(
-                "| %-36s | %-15s | %-7s | %-10s | %-10s |".format(
+                "| %-36s | %-20s | %-7s | %-10s | %-10s |".format(
                     "ID", "Блюдо", "Кол-во", "Цена", "Сумма"
                 )
             )
             println("-".repeat(92))
             order.items.forEach { item ->
                 println(
-                    "| %-36s | %-15s | %-7d | %10.2f | %10.2f |".format(
+                    "| %-36s | %-20s | %-7d | %10.2f | %10.2f |".format(
                         item.id,
                         item.dish,
                         item.quantity,
@@ -184,19 +212,22 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         print("Введите ID заказа: ")
         val orderId = scanner.nextLine().trim()
 
-        print("Введите название блюда: ")
-        val dish = scanner.nextLine().trim()
+        DishRepository.printMenu()
+
+        print("Введите название блюда или номер позиции: ")
+        val input = scanner.nextLine().trim()
+        val dish = DishRepository.getDishByNumberOrName(input)
+        if (dish == null) {
+            println("Ошибка: блюдо \"$input\" не найдено в меню.")
+            return
+        }
 
         print("Введите количество: ")
         val quantity = readIntInput()
         scanner.nextLine()
 
-        print("Введите цену за единицу: ")
-        val price = readDoubleInput()
-        scanner.nextLine()
-
         try {
-            restaurantFacade.addDishToOrder(orderId, dish, quantity, price)
+            restaurantFacade.addDishToOrder(orderId, dish, quantity)
             println("Блюдо успешно добавлено в заказ!")
         } catch (e: Exception) {
             println("Ошибка при добавлении блюда: ${e.message}")
@@ -207,14 +238,60 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         print("Введите ID заказа: ")
         val orderId = scanner.nextLine().trim()
 
-        print("Введите ID позиции заказа: ")
-        val orderItemId = scanner.nextLine().trim()
+        val order = restaurantFacade.getOrder(orderId)
+        if (order == null) {
+            println("Заказ не найден")
+            return
+        }
+
+        if (order.items.isEmpty()) {
+            println("В заказе нет блюд.")
+            return
+        }
+
+        println("Блюда в заказе:")
+        println("№  | Название             | Количество")
+        println("---|----------------------|----------")
+
+        order.items.forEachIndexed { index, item ->
+            println("${index + 1}. | ${item.dish.padEnd(20)} | ${item.quantity}")
+        }
+
+        print("Введите номер блюда для удаления: ")
+        val dishNumber = scanner.nextLine().toIntOrNull()
+        if (dishNumber == null || dishNumber !in 1..order.items.size) {
+            println("Неверный номер блюда.")
+            return
+        }
+
+        val selectedItem = order.items[dishNumber - 1]
+        val quantity: Int
+
+        if (selectedItem.quantity == 1) {
+            quantity = 1
+        } else {
+            println("Введите количество для удаления (максимум ${selectedItem.quantity}): ")
+            val quantityToRemove = readIntInput()
+            scanner.nextLine()
+
+            if (quantityToRemove <= 0 || quantityToRemove > selectedItem.quantity) {
+                println("Неверное количество.")
+                return
+            }
+            quantity = quantityToRemove
+        }
 
         try {
-            restaurantFacade.removeDishFromOrder(orderId, orderItemId)
-            println("Блюдо успешно удалено из заказа!")
+            val dishObj = DishRepository.getDishByName(selectedItem.dish)
+            if (dishObj == null) {
+                println("Ошибка: блюдо не найдено в репозитории.")
+                return
+            }
+
+            restaurantFacade.removeDishFromOrder(orderId, dishObj, quantity)
+            println("Удалено $quantity шт. блюда \"${selectedItem.dish}\" из заказа.")
         } catch (e: Exception) {
-            println("Ошибка при удалении блюда: ${e.message}")
+            println("Ошибка: ${e.message}")
         }
     }
 

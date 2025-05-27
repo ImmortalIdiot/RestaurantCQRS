@@ -4,6 +4,7 @@ import com.immortalidiot.api.facade.RestaurantFacade
 import com.immortalidiot.api.ui.ConsoleInterface
 import com.immortalidiot.command.command.*
 import com.immortalidiot.command.handler.*
+import com.immortalidiot.command.repository.DishRepository
 import com.immortalidiot.command.repository.InMemoryOrderRepository
 import com.immortalidiot.common.event.EventBus
 import com.immortalidiot.common.event.OrderStatus
@@ -14,6 +15,7 @@ import com.immortalidiot.query.service.OrderQueryService
 fun main() {
     val commandOrderRepository = InMemoryOrderRepository()
     val queryOrderRepository = OrderViewRepository()
+    val dishRepository = DishRepository
 
     val eventHandler = OrderEventHandler(queryOrderRepository)
     EventBus.getInstance().register(eventHandler)
@@ -40,15 +42,13 @@ fun main() {
         val order1Id = orders[0].id
         val order2Id = orders[1].id
 
-        restaurantFacade.addDishToOrder(order1Id, "Суп", 2, 450.00)
-        restaurantFacade.addDishToOrder(order1Id, "Стейк", 1, 400.00)
-        restaurantFacade.addDishToOrder(order1Id, "Кока-кола", 2, 80.99)
+        restaurantFacade.addDishToOrder(order1Id, dishRepository.getDishByName("Суп сырный")!!, 2)
+        restaurantFacade.addDishToOrder(order1Id, dishRepository.getDishByName("Стейк из индейки")!!, 1)
+        restaurantFacade.addDishToOrder(order1Id, dishRepository.getDishByName("Кока-кола")!!, 2)
 
-        restaurantFacade.addDishToOrder(order2Id, "Салат", 1, 290.00)
-        restaurantFacade.addDishToOrder(order2Id, "Торт", 2, 1450.00)
-        restaurantFacade.addDishToOrder(order2Id, "Милкшейк", 1, 190.00)
-
-        restaurantFacade.removeDishFromOrder(order1Id, "Суп")
+        restaurantFacade.addDishToOrder(order2Id, dishRepository.getDishByName("Салат Цезарь")!!, 1)
+        restaurantFacade.addDishToOrder(order2Id, dishRepository.getDishByName("Торт фирменный")!!, 2)
+        restaurantFacade.addDishToOrder(order2Id, dishRepository.getDishByName("Милкшейк \"Клубника\"")!!, 1)
 
         restaurantFacade.updateOrderStatus(order2Id, OrderStatus.IN_PROGRESS)
         restaurantFacade.updateOrderStatus(order2Id, OrderStatus.READY)

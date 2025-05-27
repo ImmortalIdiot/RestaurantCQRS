@@ -24,7 +24,7 @@ data class OrderView(
 
     val status: OrderStatus get() = _status
     val totalAmount: Double get() = _totalAmount
-    val updatedAt: LocalDateTime get() = _updatedAt
+    private val updatedAt: LocalDateTime get() = _updatedAt
 
     fun getItems(): List<OrderItemView> = items.toList()
 
@@ -54,10 +54,10 @@ data class OrderView(
         _updatedAt = LocalDateTime.now()
     }
 
-    fun orderItemListToDTO(): List<OrderItemDTO> = items.map {
+    private fun orderItemListToDTO(): List<OrderItemDTO> = items.map {
         OrderItemDTO(
             id = it.id,
-            dish = it.dish,
+            dish = it.dish.name,
             quantity = it.quantity,
             price = it.price,
             subtotal = it.subtotal

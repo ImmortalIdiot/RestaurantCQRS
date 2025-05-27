@@ -35,20 +35,16 @@ class OrderEventHandler(
     private fun handleDishAdded(event: DishAddedEvent) {
         val orderView = repository.findById(event.orderId) ?: return
 
-        val existingItem = orderView.getItems().find { it.dish == event.dish }
+        val existingItem = orderView.getItems().find { it.dish.name == event.dish.name }
 
         if (existingItem != null) {
-            orderView.removeItem(existingItem.id)
-            val updatedItem = existingItem.copy(
-                quantity = existingItem.quantity + event.quantity,
-                price = event.price
-            )
-            orderView.addItem(updatedItem)
+            existingItem.updateQuantity(existingItem.quantity + event.quantity)
+            existingItem.updatePrice(event.dish.price)
         } else {
             val newItem = OrderItemView(
                 dish = event.dish,
                 quantity = event.quantity,
-                price = event.price
+                price = event.dish.price
             )
             orderView.addItem(newItem)
         }

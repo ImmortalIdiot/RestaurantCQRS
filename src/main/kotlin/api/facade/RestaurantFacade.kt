@@ -2,6 +2,7 @@ package com.immortalidiot.api.facade
 
 import com.immortalidiot.command.command.*
 import com.immortalidiot.command.handler.CommandBus
+import com.immortalidiot.command.model.Dish
 import com.immortalidiot.common.event.OrderStatus
 import com.immortalidiot.query.dto.OrderDTO
 import com.immortalidiot.query.dto.OrderStatisticsDTO
@@ -16,12 +17,12 @@ class RestaurantFacade(
         commandBus.dispatch(CreateOrderCommand(customerId, tableNumber))
     }
 
-    fun addDishToOrder(orderId: String, dish: String, quantity: Int, price: Double) {
-        commandBus.dispatch(AddDishToOrderCommand(orderId, dish, quantity, price))
+    fun addDishToOrder(orderId: String, dish: Dish, quantity: Int) {
+        commandBus.dispatch(AddDishToOrderCommand(orderId, dish, quantity))
     }
 
-    fun removeDishFromOrder(orderId: String, dish: String) {
-        commandBus.dispatch(RemoveDishFromOrderCommand(orderId, dish))
+    fun removeDishFromOrder(orderId: String, dish: Dish, quantity: Int) {
+        commandBus.dispatch(RemoveDishFromOrderCommand(orderId, dish, quantity))
     }
 
     fun updateOrderStatus(orderId: String, newStatus: OrderStatus) {

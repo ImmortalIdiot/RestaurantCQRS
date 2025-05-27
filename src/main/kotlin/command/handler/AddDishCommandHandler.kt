@@ -16,7 +16,7 @@ class AddDishCommandHandler(
         val orderItem = OrderItem(
             dish = command.dish,
             quantity = command.quantity,
-            price = command.price
+            price = command.dish.price
         )
 
         order.addItem(orderItem)
