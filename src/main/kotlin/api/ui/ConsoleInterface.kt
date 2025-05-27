@@ -159,18 +159,24 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
 
         if (order.items.isNotEmpty()) {
             println("\nБлюда в заказе:")
-            println("%-36s %-15s %-10s %-15s".format(
-                "ID", "Блюдо", "Кол-во", "Цена"
-            ))
-            println("-".repeat(80))
+            println(
+                "| %-36s | %-15s | %-7s | %-10s | %-10s |".format(
+                    "ID", "Блюдо", "Кол-во", "Цена", "Сумма"
+                )
+            )
+            println("-".repeat(92))
             order.items.forEach { item ->
-                println("%-36s %-15s %-10d %,.2f руб.".format(
-                    item.id,
-                    item.dish,
-                    item.quantity,
-                    item.price
-                ))
+                println(
+                    "| %-36s | %-15s | %-7d | %10.2f | %10.2f |".format(
+                        item.id,
+                        item.dish,
+                        item.quantity,
+                        item.price,
+                        item.subtotal
+                    )
+                )
             }
+
         }
     }
 
