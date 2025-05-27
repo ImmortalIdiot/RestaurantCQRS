@@ -42,7 +42,14 @@ class Order private constructor(
 
     fun addItem(item: OrderItem) {
         validateOrderModifiable()
-        items.add(item)
+
+        val existingItem = items.find { it.getDish().equals(item.getDish(), ignoreCase = true) }
+        if (existingItem != null) {
+            existingItem.increaseQuantity(item.getQuantity())
+        } else {
+            items.add(item)
+        }
+
         updatedAt = LocalDateTime.now()
 
         EventBus.getInstance().publish(
@@ -54,6 +61,7 @@ class Order private constructor(
             )
         )
     }
+
 
     fun removeItem(itemId: String) {
         validateOrderModifiable()

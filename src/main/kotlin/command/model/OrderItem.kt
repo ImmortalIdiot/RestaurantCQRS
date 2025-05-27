@@ -6,7 +6,7 @@ import java.util.*
 class OrderItem private constructor(
     private val id: String,
     private val dish: String,
-    private val quantity: Int,
+    private var quantity: Int,
     private val price: Double
 ) {
     constructor(dish: String, quantity: Int, price: Double) : this(
@@ -24,4 +24,9 @@ class OrderItem private constructor(
     fun getDish(): String = dish
     fun getQuantity(): Int = quantity
     fun getPrice(): Double = price
+
+    fun increaseQuantity(amount: Int) {
+        if (amount <= 0) throw OrderExceptions.InvalidQuantityException(amount)
+        quantity += amount
+    }
 }

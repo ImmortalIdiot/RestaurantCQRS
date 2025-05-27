@@ -40,19 +40,19 @@ fun main() {
         val order1Id = orders[0].id
         val order2Id = orders[1].id
 
-        restaurantFacade.addDishToOrder(order1Id, "Суп", 2, 15.99)  // Суп
-        restaurantFacade.addDishToOrder(order1Id, "Стейк", 1, 25.99)  // Стейк
-        restaurantFacade.addDishToOrder(order1Id, "Кока-кола", 2, 5.99)   // Напитки
+        restaurantFacade.addDishToOrder(order1Id, "Суп", 2, 450.00)
+        restaurantFacade.addDishToOrder(order1Id, "Стейк", 1, 400.00)
+        restaurantFacade.addDishToOrder(order1Id, "Кока-кола", 2, 80.99)
 
-        restaurantFacade.addDishToOrder(order2Id, "Салат", 1, 18.99)  // Паста
-        restaurantFacade.addDishToOrder(order2Id, "Торт", 2, 7.99)   // Салат
-        restaurantFacade.addDishToOrder(order2Id, "Милкшейк", 1, 6.99)   // Десерт
+        restaurantFacade.addDishToOrder(order2Id, "Салат", 1, 290.00)
+        restaurantFacade.addDishToOrder(order2Id, "Торт", 2, 1450.00)
+        restaurantFacade.addDishToOrder(order2Id, "Милкшейк", 1, 190.00)
 
         restaurantFacade.removeDishFromOrder(order1Id, "Суп")
 
-        restaurantFacade.updateOrderStatus(order1Id, OrderStatus.IN_PROGRESS)
         restaurantFacade.updateOrderStatus(order2Id, OrderStatus.IN_PROGRESS)
         restaurantFacade.updateOrderStatus(order2Id, OrderStatus.READY)
+        restaurantFacade.updateOrderStatus(order2Id, OrderStatus.COMPLETED)
 
         println("Тестовые данные созданы")
         println("Созданы заказы с id: $order1Id, $order2Id")
