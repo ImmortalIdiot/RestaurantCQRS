@@ -32,6 +32,7 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         println("6. Обновить статус заказа")
         println("7. Отменить заказ")
         println("8. Статистика заказов")
+        println("9. Посмотреть меню")
         println("0. Выход")
         print("Выберите действие: ")
     }
@@ -48,6 +49,7 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
                 6 -> updateOrderStatus()
                 7 -> cancelOrder()
                 8 -> showOrderStatistics()
+                9 -> showRestaurantMenu()
                 else -> println("Неверный выбор. Попробуйте снова.")
             }
         } catch (e: Exception) {
@@ -339,6 +341,10 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         println("Выполненных заказов: ${stats.completedOrders}")
         println("Общая выручка: %.2f руб.".format(stats.totalRevenue))
         println("Средняя сумма заказа: %.2f руб.".format(stats.averageOrderValue))
+    }
+
+    private fun showRestaurantMenu() {
+        DishRepository.printMenu()
     }
 
     private fun readIntInput(): Int {
