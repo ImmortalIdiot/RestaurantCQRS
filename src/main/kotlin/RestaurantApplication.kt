@@ -62,7 +62,7 @@ fun main() {
             println("Заказ ${order.id}:")
             println("  Заказчик: ${order.customerId}")
             println("  Номер стола: ${order.tableNumber}")
-            println("  Статус: ${order.status}")
+            println("  Статус: ${OrderStatus.fromString(order.status).displayName}")
             println("  Счёт: ${"%.2f".format(order.totalAmount)} руб.")
             println("  Количество блюд: ${order.items.size}")
             println()

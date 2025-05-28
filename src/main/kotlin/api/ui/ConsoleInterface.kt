@@ -127,7 +127,7 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
             println("ID заказа: ${order.id}")
             println("ID клиента: ${order.customerId}")
             println("Номер столика: ${order.tableNumber}")
-            println("Статус заказа: ${order.status}")
+            println("Статус заказа: ${formatStatus(order.status)}")
             println("\nБлюда:")
             order.items.forEach { item ->
                 println("- ${item.dish} (x${item.quantity}) - ${item.price} руб. общая стоимость = ${item.subtotal} руб.")
@@ -160,7 +160,7 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
                     order.id,
                     order.customerId,
                     order.tableNumber,
-                    order.status,
+                    formatStatus(order.status),
                     order.totalAmount
                 )
             )
@@ -180,7 +180,7 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         println("ID заказа: ${order.id}")
         println("ID клиента: ${order.customerId}")
         println("Номер столика: ${order.tableNumber}")
-        println("Статус: ${order.status}")
+        println("Статус: ${formatStatus(order.status)}")
         println("Общая сумма: %.2f руб.".format(order.totalAmount))
         println("Создан: ${order.createdAt.format(dateFormatter)}")
         println("Последнее обновление: ${order.updatedAt.format(dateFormatter)}")
@@ -299,18 +299,41 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
         print("Введите ID заказа: ")
         val orderId = scanner.nextLine().trim()
 
-        println("\nДоступные статусы:")
-        OrderStatus.entries.forEach { status ->
-            println("${status.ordinal}. $status")
+        val order = restaurantFacade.getOrder(orderId)
+        if (order == null) {
+            println("Заказ с ID $orderId не найден.")
+            return
         }
+
+        val currentStatus = try {
+            OrderStatus.fromString(order.status)
+        } catch (e: Exception) {
+            println("Ошибка: не удалось определить текущий статус заказа: ${e.message}")
+            return
+        }
+
+        val availableStatuses = currentStatus.getValidTransitions().toList()
+        if (availableStatuses.isEmpty()) {
+            println("Статус заказа \"${currentStatus.displayName}\" не может быть изменён.")
+            return
+        }
+
+        println("\nТекущий статус: ${currentStatus.displayName}")
+        println("Доступные статусы:")
+        availableStatuses.forEachIndexed { index, status ->
+            println("${index + 1}. ${status.displayName} (${status.name})")
+        }
+
         print("Выберите новый статус (номер): ")
-        val statusOrdinal = readIntInput()
+        val statusIndex = readIntInput() - 1
         scanner.nextLine()
 
         try {
-            val newStatus = OrderStatus.entries[statusOrdinal]
+            val newStatus = availableStatuses.getOrNull(statusIndex)
+                ?: throw IllegalArgumentException("Неверный номер статуса")
+
             restaurantFacade.updateOrderStatus(orderId, newStatus)
-            println("Статус заказа успешно обновлен!")
+            println("Статус заказа успешно обновлён на \"${newStatus.displayName}\".")
         } catch (e: Exception) {
             println("Ошибка при обновлении статуса: ${e.message}")
         }
@@ -350,6 +373,14 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
             scanner.nextInt()
         } catch (e: Exception) {
             -1
+        }
+    }
+
+    private fun formatStatus(status: String): String {
+        return try {
+            OrderStatus.fromString(status).displayName
+        } catch (e: Exception) {
+            "Неизвестно ($status)"
         }
     }
 }
