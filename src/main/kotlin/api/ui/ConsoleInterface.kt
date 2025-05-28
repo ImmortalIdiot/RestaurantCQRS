@@ -1,10 +1,8 @@
 package com.immortalidiot.api.ui
 
 import com.immortalidiot.api.facade.RestaurantFacade
-import com.immortalidiot.command.model.DishCategory
 import com.immortalidiot.command.repository.DishRepository
 import com.immortalidiot.common.event.OrderStatus
-import com.immortalidiot.common.exception.OrderExceptions
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -352,14 +350,6 @@ class ConsoleInterface(private val restaurantFacade: RestaurantFacade) {
             scanner.nextInt()
         } catch (e: Exception) {
             -1
-        }
-    }
-
-    private fun readDoubleInput(): Double {
-        return try {
-            scanner.nextDouble()
-        } catch (e: Exception) {
-            -1.0
         }
     }
 }
