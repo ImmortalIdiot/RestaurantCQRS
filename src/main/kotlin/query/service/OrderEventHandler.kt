@@ -42,6 +42,7 @@ class OrderEventHandler(
             existingItem.updatePrice(event.dish.price)
         } else {
             val newItem = OrderItemView(
+                id = event.orderItemId,
                 dish = event.dish,
                 quantity = event.quantity,
                 price = event.dish.price
@@ -54,7 +55,16 @@ class OrderEventHandler(
 
     private fun handleDishRemoved(event: DishRemovedEvent) {
         val orderView = repository.findById(event.orderId) ?: return
-        orderView.removeItem(event.orderItemId)
+        val item = orderView.getItems().find { it.id == event.orderItemId } ?: return
+
+        val remainingQuantity = item.quantity - event.quantity
+
+        if (remainingQuantity > 0) {
+            item.updateQuantity(remainingQuantity)
+        } else {
+            orderView.removeItem(item.id)
+        }
+
         repository.save(orderView)
     }
 

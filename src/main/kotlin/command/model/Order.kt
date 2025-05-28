@@ -55,25 +55,9 @@ class Order private constructor(
         EventBus.getInstance().publish(
             DishAddedEvent(
                 orderId = id,
+                orderItemId = (existingItem ?: item).getId(), // ключевой момент
                 dish = item.getDish(),
-                quantity = item.getQuantity(),
-            )
-        )
-    }
-
-
-    fun removeItem(itemId: String) {
-        validateOrderModifiable()
-        val removed = items.removeIf { it.getId() == itemId }
-        if (!removed) {
-            throw OrderExceptions.OrderItemNotFoundException(itemId)
-        }
-        updatedAt = LocalDateTime.now()
-
-        EventBus.getInstance().publish(
-            DishRemovedEvent(
-                orderId = id,
-                orderItemId = itemId
+                quantity = item.getQuantity()
             )
         )
     }
@@ -89,20 +73,23 @@ class Order private constructor(
             throw OrderExceptions.InvalidQuantityException(quantityToRemove)
         }
 
+        val itemId = item.getId()
+
         if (quantityToRemove == currentQty) {
-            val itemId = item.getId()
             items.remove(item)
-            EventBus.getInstance().publish(
-                DishRemovedEvent(orderId = id, orderItemId = itemId)
-            )
         } else {
             item.decreaseQuantity(quantityToRemove)
-            EventBus.getInstance().publish(
-                DishRemovedEvent(orderId = id, orderItemId = item.getId())
-            )
         }
 
         updatedAt = LocalDateTime.now()
+
+        EventBus.getInstance().publish(
+            DishRemovedEvent(
+                orderId = id,
+                orderItemId = itemId,
+                quantity = quantityToRemove
+            )
+        )
     }
 
     fun updateStatus(newStatus: OrderStatus) {

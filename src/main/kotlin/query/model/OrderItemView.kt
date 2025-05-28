@@ -2,7 +2,7 @@ package com.immortalidiot.query.model
 
 import com.immortalidiot.command.model.Dish
 import com.immortalidiot.common.exception.OrderExceptions
-import java.util.*
+import java.util.UUID
 
 class OrderItemView(
     val id: String = UUID.randomUUID().toString(),
